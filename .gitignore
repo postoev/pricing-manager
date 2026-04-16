@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Tests
+.pytest_cache/
+
+# Generated output
+*.png
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# pipx cache
+.pipx/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
