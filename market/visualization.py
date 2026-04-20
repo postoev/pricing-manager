@@ -87,7 +87,8 @@ def _plot_prices(
         s_days = list(range(s.start_day, s.start_day + len(prices)))
         color  = seller_color[s.name]
         ax.plot(s_days, prices, color=color, linewidth=1.4, alpha=0.4)
-        ax.plot(s_days, _smooth(prices), color=color, linewidth=2.2, label=s.name)
+        sd_sm, sm = _smooth(prices, s_days)
+        ax.plot(sd_sm, sm, color=color, linewidth=2.2, label=s.name)
 
     ax.axhline(good.cost, color='#E74C3C', linestyle='--', linewidth=1.2,
                label=f'cost={good.cost:.0f}')
@@ -149,8 +150,8 @@ def _plot_daily_profit(
     for s in sellers:
         daily = s.profit_series(n_days)
         ax.plot(days, daily, color=seller_color[s.name], alpha=0.25, linewidth=1)
-        ax.plot(days, _smooth(daily, w=7), color=seller_color[s.name],
-                linewidth=2.2, label=s.name)
+        d_sm, sm_d = _smooth(daily, days, w=7)
+        ax.plot(d_sm, sm_d, color=seller_color[s.name], linewidth=2.2, label=s.name)
     _style_ax(ax, 'Дневная прибыль (сглаженная)', 'Прибыль / день')
 
 
@@ -175,9 +176,15 @@ def _add_event_vlines(ax, markers: List[Tuple[int, str]]) -> None:
                 fontsize=6, color='#555', va='top')
 
 
-def _smooth(arr, w: int = 5) -> np.ndarray:
-    arr = np.asarray(arr)
-    return arr if len(arr) < w else np.convolve(arr, np.ones(w) / w, mode='same')
+def _smooth(arr, x, w: int = 5):
+    """Return (x_aligned, smoothed) using valid convolution — no edge artifacts."""
+    arr = np.asarray(arr, dtype=float)
+    x   = np.asarray(x)
+    if len(arr) < w:
+        return x, arr
+    sm     = np.convolve(arr, np.ones(w) / w, mode='valid')
+    offset = (w - 1) // 2
+    return x[offset: offset + len(sm)], sm
 
 
 def _seller_palette(market: 'Market') -> Dict[str, tuple]:

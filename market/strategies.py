@@ -20,7 +20,10 @@ class Strategy(Protocol):
 class EpsilonGreedy:
     """
     Exploit: continue in the direction that last improved profit.
-    Explore: random ±explore_range perturbation with probability epsilon.
+    Explore: random perturbation with probability epsilon.
+
+    Exploration lower bound is cost: prices below cost yield negative margin
+    on every unit sold regardless of demand, so that region is never explored.
     """
     epsilon:       float = 0.25
     step:          float = 0.07
@@ -31,8 +34,8 @@ class EpsilonGreedy:
         hist = seller.hist_profit[good]
 
         if random.random() < self.epsilon or len(hist) < 2:
-            return cur * random.uniform(1 - self.explore_range,
-                                        1 + self.explore_range)
+            lo = max(cost, cur * (1 - self.explore_range))
+            return random.uniform(lo, cur * (1 + self.explore_range))
 
         dp        = hist[-1] - hist[-2]
         dv        = seller.hist_price[good][-1] - seller.hist_price[good][-2]
@@ -45,6 +48,8 @@ class GradientAscent:
     """
     Finite-difference gradient ascent on observed profit.
     Occasional random exploration to escape local optima.
+
+    Same cost-bounded exploration as EpsilonGreedy.
     """
     lr:            float = 0.08
     explore_prob:  float = 0.15
@@ -55,14 +60,14 @@ class GradientAscent:
         hist = seller.hist_profit[good]
 
         if random.random() < self.explore_prob or len(hist) < 2:
-            return cur * random.uniform(1 - self.explore_range,
-                                        1 + self.explore_range)
+            lo = max(cost, cur * (1 - self.explore_range))
+            return random.uniform(lo, cur * (1 + self.explore_range))
 
         dp = hist[-1] - hist[-2]
         dv = seller.hist_price[good][-1] - seller.hist_price[good][-2]
         if abs(dv) < 1e-9:
-            return cur * random.uniform(1 - self.explore_range / 2,
-                                        1 + self.explore_range / 2)
+            lo = max(cost, cur * (1 - self.explore_range / 2))
+            return random.uniform(lo, cur * (1 + self.explore_range / 2))
         return cur + self.lr * cur * float(np.sign(dp / dv))
 
 
