@@ -2,8 +2,8 @@ from __future__ import annotations
 import random
 from typing import Callable, Dict, List
 
+from .assortment import Assortment
 from .events import Event
-from .goods import Good
 from .seller import Seller
 from .strategies import Strategy
 
@@ -11,7 +11,7 @@ from .strategies import Strategy
 class Market:
     def __init__(
         self,
-        goods:          Dict[str, Good],
+        goods:          Assortment,
         sellers:        List[Seller],
         buyers_per_day: int = 1000,
     ) -> None:
@@ -21,7 +21,7 @@ class Market:
         self.day            = 0
         self.events:        List[Event] = []
 
-        self._good_sellers: Dict[str, List[Seller]] = {g: [] for g in goods}
+        self._good_sellers: Dict[str, List[Seller]] = {g: [] for g in goods.names()}
         for s in sellers:
             for g in s.goods:
                 self._good_sellers[g].append(s)
@@ -56,7 +56,7 @@ class Market:
         for event in [e for e in self.events if e.day == self.day]:
             self._apply_event(event)
 
-        good_names = list(self.goods.keys())
+        good_names = self.goods.names()
         day_sales  = {s.name: {g: 0   for g in s.goods} for s in self.sellers}
         day_profit = {s.name: {g: 0.0 for g in s.goods} for s in self.sellers}
 

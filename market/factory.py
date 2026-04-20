@@ -1,9 +1,10 @@
 from __future__ import annotations
 import random
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import numpy as np
 
+from .assortment import Assortment
 from .goods import Good
 from .seller import Seller
 from .simulation import Market
@@ -19,25 +20,25 @@ def build_market(
     if seed is not None:
         random.seed(seed)
 
-    goods   = _make_goods(n_goods, rng)
-    sellers = _make_sellers(n_sellers, list(goods.keys()), rng)
-    return Market(goods, sellers, buyers_per_day)
+    assortment = _make_assortment(n_goods, rng)
+    sellers    = _make_sellers(n_sellers, assortment.names(), rng)
+    return Market(assortment, sellers, buyers_per_day)
 
 
 # ---------------------------------------------------------------------------
 
-def _make_goods(n: int, rng: np.random.Generator) -> Dict[str, Good]:
-    goods: Dict[str, Good] = {}
+def _make_assortment(n: int, rng: np.random.Generator) -> Assortment:
+    assortment = Assortment()
     for i in range(n):
         name = f"G{i + 1}"
         cost = round(10.0 + i * 5.0, 2)
-        goods[name] = Good(
+        assortment.add(Good(
             name  = name,
             cost  = cost,
             value = round(cost * float(rng.uniform(2.5, 4.0)), 2),
             lam   = float(rng.uniform(0.10, 0.20)),
-        )
-    return goods
+        ))
+    return assortment
 
 
 def _make_sellers(

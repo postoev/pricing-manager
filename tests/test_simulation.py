@@ -2,11 +2,19 @@ import random
 import pytest
 import numpy as np
 
+from market.assortment import Assortment
 from market.goods      import Good
 from market.seller     import Seller
 from market.events     import Event
 from market.simulation import Market
 from market.strategies import EpsilonGreedy
+
+
+def make_assortment(*goods: Good) -> Assortment:
+    a = Assortment()
+    for g in goods:
+        a.add(g)
+    return a
 
 
 # ---------------------------------------------------------------------------
@@ -21,7 +29,7 @@ def single_good():
 @pytest.fixture
 def simple_market(single_good):
     sellers = [Seller(name='S1', goods=['G1'])]
-    return Market({'G1': single_good}, sellers, buyers_per_day=500)
+    return Market(make_assortment(single_good), sellers, buyers_per_day=500)
 
 
 # ---------------------------------------------------------------------------
@@ -59,7 +67,7 @@ def test_run_advances_correct_number_of_days(simple_market):
 
 def test_very_high_price_yields_few_sales(single_good):
     sellers = [Seller(name='S1', goods=['G1'])]
-    market  = Market({'G1': single_good}, sellers, buyers_per_day=1000)
+    market  = Market(make_assortment(single_good), sellers, buyers_per_day=1000)
     sellers[0].prices['G1'] = 500.0   # far above value=30
     market._simulate_day()
     assert sellers[0].hist_sales['G1'][0] < 10
@@ -71,7 +79,7 @@ def test_lower_price_yields_more_sales(single_good):
         random.seed(seed)
         np.random.seed(seed)
         sellers = [Seller(name='S1', goods=['G1'])]
-        market  = Market({'G1': single_good}, sellers, buyers_per_day=2000)
+        market  = Market(make_assortment(single_good), sellers, buyers_per_day=2000)
         sellers[0].prices['G1'] = price
         market._simulate_day()
         return sellers[0].hist_sales['G1'][0]
@@ -85,7 +93,7 @@ def test_competition_expands_total_market(single_good):
         random.seed(seed)
         np.random.seed(seed)
         sellers = [Seller(name=f'S{i}', goods=['G1']) for i in range(n_sellers)]
-        market  = Market({'G1': single_good}, sellers, buyers_per_day=5000)
+        market  = Market(make_assortment(single_good), sellers, buyers_per_day=5000)
         for s in sellers:
             s.prices['G1'] = 20.0
         market._simulate_day()
@@ -117,12 +125,12 @@ def test_new_seller_starts_recording_from_entry_day(simple_market):
 
 
 def test_add_good_event_expands_assortment():
-    goods = {
-        'G1': Good('G1', 10.0, 30.0, 0.15),
-        'G2': Good('G2', 15.0, 40.0, 0.12),
-    }
+    assortment = make_assortment(
+        Good('G1', 10.0, 30.0, 0.15),
+        Good('G2', 15.0, 40.0, 0.12),
+    )
     sellers = [Seller('S1', ['G1']), Seller('S2', ['G2'])]
-    market  = Market(goods, sellers, buyers_per_day=100)
+    market  = Market(assortment, sellers, buyers_per_day=100)
     market.schedule(Event(day=2, kind='add_good', seller='S1', goods=['G2']))
     for _ in range(3):
         market._simulate_day()
