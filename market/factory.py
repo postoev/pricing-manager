@@ -65,4 +65,4 @@ def _make_sellers(
                                 replace=False):
                 s_set.add(str(g))
 
-    return [Seller(name=f"S{j + 1}", goods=sorted(s)) for j, s in enumerate(sets)]
+    return [Seller(name=f"S{j + 1}", goods=sorted(s), budget=10_000.0) for j, s in enumerate(sets)]

@@ -11,7 +11,7 @@ def good():
 
 @pytest.fixture
 def seller(good):
-    s = Seller(name='S1', goods=['G1'])
+    s = Seller(name='S1', goods=['G1'], budget=10_000.0)
     s.setup({'G1': good})
     return s
 
@@ -41,7 +41,7 @@ def test_total_profit_sums_across_days(seller):
 
 def test_total_profit_sums_across_goods(good):
     g2 = Good('G2', 15.0, 40.0, 0.12)
-    s  = Seller(name='S1', goods=['G1', 'G2'])
+    s  = Seller(name='S1', goods=['G1', 'G2'], budget=10_000.0)
     s.setup({'G1': good, 'G2': g2})
     s.record('G1', 20.0, 5, 50.0)
     s.record('G2', 30.0, 3, 45.0)
@@ -49,7 +49,7 @@ def test_total_profit_sums_across_goods(good):
 
 
 def test_add_good_initialises_correctly(good):
-    s = Seller(name='S1', goods=[])
+    s = Seller(name='S1', goods=[], budget=10_000.0)
     s.add_good('G1', good)
     assert 'G1' in s.goods
     assert s.prices['G1'] == pytest.approx(good.cost * 2.0)
@@ -58,7 +58,7 @@ def test_add_good_initialises_correctly(good):
 
 def test_profit_series_pads_leading_zeros():
     g = Good('G1', 10.0, 30.0, 0.15)
-    s = Seller(name='S1', goods=['G1'], start_day=3)
+    s = Seller(name='S1', goods=['G1'], budget=10_000.0, start_day=3)
     s.setup({'G1': g})
     s.record('G1', 20.0, 5, 50.0)
     s.record('G1', 22.0, 6, 66.0)
@@ -67,7 +67,23 @@ def test_profit_series_pads_leading_zeros():
 
 def test_sales_series_pads_leading_zeros():
     g = Good('G1', 10.0, 30.0, 0.15)
-    s = Seller(name='S1', goods=['G1'], start_day=2)
+    s = Seller(name='S1', goods=['G1'], budget=10_000.0, start_day=2)
     s.setup({'G1': g})
     s.record('G1', 20.0, 10, 100.0)
     assert list(s.sales_series('G1', n_days=4)) == [0.0, 10.0, 0.0, 0.0]
+
+
+def test_budget_increases_on_profit(seller):
+    seller.record('G1', price=20.0, sales=10, profit=100.0)
+    assert seller.budget == pytest.approx(10_100.0)
+
+
+def test_budget_decreases_on_loss(seller):
+    seller.record('G1', price=5.0, sales=10, profit=-50.0)
+    assert seller.budget == pytest.approx(9_950.0)
+
+
+def test_budget_accumulates_across_days(seller):
+    seller.record('G1', 20.0, 10, 100.0)
+    seller.record('G1', 22.0, 12, 144.0)
+    assert seller.budget == pytest.approx(10_244.0)

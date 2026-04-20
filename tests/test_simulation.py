@@ -27,7 +27,7 @@ def single_good():
 
 @pytest.fixture
 def simple_market(single_good):
-    sellers = [Seller(name='S1', goods=['G1'])]
+    sellers = [Seller(name='S1', goods=['G1'], budget=10_000.0)]
     return Market(make_assortment(single_good), sellers, buyers_per_day=500)
 
 
@@ -65,7 +65,7 @@ def test_run_advances_correct_number_of_days(simple_market):
 # ---------------------------------------------------------------------------
 
 def test_very_high_price_yields_few_sales(single_good):
-    sellers = [Seller(name='S1', goods=['G1'])]
+    sellers = [Seller(name='S1', goods=['G1'], budget=10_000.0)]
     market  = Market(make_assortment(single_good), sellers, buyers_per_day=1000)
     sellers[0].prices['G1'] = 500.0   # far above value=30
     market._simulate_day()
@@ -77,7 +77,7 @@ def test_lower_price_yields_more_sales(single_good):
     def sales_at_price(price, seed=0):
         random.seed(seed)
         np.random.seed(seed)
-        sellers = [Seller(name='S1', goods=['G1'])]
+        sellers = [Seller(name='S1', goods=['G1'], budget=10_000.0)]
         market  = Market(make_assortment(single_good), sellers, buyers_per_day=2000)
         sellers[0].prices['G1'] = price
         market._simulate_day()
@@ -91,7 +91,7 @@ def test_competition_expands_total_market(single_good):
     def total_sales(n_sellers, seed=42):
         random.seed(seed)
         np.random.seed(seed)
-        sellers = [Seller(name=f'S{i}', goods=['G1']) for i in range(n_sellers)]
+        sellers = [Seller(name=f'S{i}', goods=['G1'], budget=10_000.0) for i in range(n_sellers)]
         market  = Market(make_assortment(single_good), sellers, buyers_per_day=5000)
         for s in sellers:
             s.prices['G1'] = 20.0

@@ -11,6 +11,7 @@ from .goods import Good
 class Seller:
     name:      str
     goods:     List[str]
+    budget:    float
     start_day: int = 1
 
     prices:      Dict[str, float]       = field(default_factory=dict)
@@ -39,6 +40,7 @@ class Seller:
         self.hist_price[good].append(price)
         self.hist_sales[good].append(sales)
         self.hist_profit[good].append(profit)
+        self.budget += profit
 
     def total_profit(self) -> float:
         return sum(sum(v) for v in self.hist_profit.values())
