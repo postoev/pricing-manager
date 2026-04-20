@@ -1,6 +1,6 @@
 """Visualization for Market simulation results."""
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Tuple
+from typing import TYPE_CHECKING, Dict, List
 
 import matplotlib
 matplotlib.use('Agg')
@@ -14,20 +14,15 @@ if TYPE_CHECKING:
     from .seller import Seller
     from .goods import Good
 
-# Type alias
-EventMarkers = Dict[str, List[Tuple[int, str]]]
-
 
 def plot_simulation(market: 'Market',
                     save_path: str = 'market_simulation.png') -> None:
     n_days     = market.day
     days       = list(range(1, n_days + 1))
-    good_names = list(market.goods.keys())
+    good_names = market.goods.names()
     n_goods    = len(good_names)
 
     seller_color = _seller_palette(market)
-    event_markers = _build_event_markers(market, good_names)
-
     fig = plt.figure(figsize=(14, 4 * n_goods + 4))
     fig.patch.set_facecolor('#F7F9FC')
 
@@ -43,12 +38,10 @@ def plot_simulation(market: 'Market',
         _plot_prices(
             fig.add_subplot(top_grid[row, 0]),
             market.goods[gname], gname, carriers, n_days, seller_color,
-            event_markers[gname],
         )
         _plot_shares(
             fig.add_subplot(top_grid[row, 1]),
             gname, carriers, days, n_days, seller_color,
-            event_markers[gname],
         )
 
     _plot_cumulative_profit(
@@ -72,12 +65,11 @@ def plot_simulation(market: 'Market',
 
 def _plot_prices(
     ax,
-    good:          'Good',
-    gname:         str,
-    carriers:      List['Seller'],
-    n_days:        int,
-    seller_color:  Dict[str, tuple],
-    event_markers: List[Tuple[int, str]],
+    good:         'Good',
+    gname:        str,
+    carriers:     List['Seller'],
+    n_days:       int,
+    seller_color: Dict[str, tuple],
 ) -> None:
     ax.set_facecolor('#FAFAFA')
     for s in carriers:
@@ -95,18 +87,16 @@ def _plot_prices(
     ax.axhline(good.monopoly_optimal_price(), color='#27AE60', linestyle=':',
                linewidth=1.5, label=f'opt≈{good.monopoly_optimal_price():.0f}')
 
-    _add_event_vlines(ax, event_markers)
     _style_ax(ax, f'{gname}  —  цены продавцов', 'Цена')
 
 
 def _plot_shares(
     ax,
-    gname:         str,
-    carriers:      List['Seller'],
-    days:          List[int],
-    n_days:        int,
-    seller_color:  Dict[str, tuple],
-    event_markers: List[Tuple[int, str]],
+    gname:        str,
+    carriers:     List['Seller'],
+    days:         List[int],
+    n_days:       int,
+    seller_color: Dict[str, tuple],
 ) -> None:
     ax.set_facecolor('#FAFAFA')
 
@@ -120,7 +110,6 @@ def _plot_shares(
                         color=seller_color[s.name], alpha=0.75, label=s.name)
         bottom += shares[idx]
 
-    _add_event_vlines(ax, event_markers)
     ax.set_ylim(0, 100)
     _style_ax(ax, f'{gname}  —  доля рынка', 'Доля рынка, %')
 
@@ -168,14 +157,6 @@ def _style_ax(ax, title: str, ylabel: str) -> None:
     ax.grid(axis='y', alpha=0.3)
 
 
-def _add_event_vlines(ax, markers: List[Tuple[int, str]]) -> None:
-    for day, label in markers:
-        ax.axvline(day, color='#888', linestyle=':', linewidth=1.2)
-        ax.text(day + 0.3, 0.95, label,
-                transform=ax.get_xaxis_transform(),
-                fontsize=6, color='#555', va='top')
-
-
 def _smooth(arr, x, w: int = 5):
     """Return (x_aligned, smoothed) using valid convolution — no edge artifacts."""
     arr = np.asarray(arr, dtype=float)
@@ -188,20 +169,5 @@ def _smooth(arr, x, w: int = 5):
 
 
 def _seller_palette(market: 'Market') -> Dict[str, tuple]:
-    names = list(dict.fromkeys(
-        [s.name for s in market.sellers] +
-        [e.seller for e in market.events if e.kind == 'new_seller']
-    ))
     palette = plt.cm.tab10.colors
-    return {name: palette[i % 10] for i, name in enumerate(names)}
-
-
-def _build_event_markers(market: 'Market',
-                          good_names: List[str]) -> EventMarkers:
-    markers: EventMarkers = {g: [] for g in good_names}
-    for ev in market.events:
-        label = f"+{ev.seller}" if ev.kind == 'new_seller' else f"{ev.seller}+{','.join(ev.goods)}"
-        for g in ev.goods:
-            if g in markers:
-                markers[g].append((ev.day, label))
-    return markers
+    return {s.name: palette[i % 10] for i, s in enumerate(market.sellers)}
