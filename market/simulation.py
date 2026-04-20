@@ -1,10 +1,11 @@
 from __future__ import annotations
 import random
-from typing import Dict, List
+from typing import List
 
 from .assortment import Assortment
 from .seller import Seller
 from .strategies import Strategy
+from .stock_strategies import StockStrategy
 
 
 class Market:
@@ -19,30 +20,37 @@ class Market:
         self.buyers_per_day = buyers_per_day
         self.day            = 0
 
-        self._good_sellers: Dict[str, List[Seller]] = {g: [] for g in goods.names()}
         for s in sellers:
-            for g in s.goods:
-                self._good_sellers[g].append(s)
-
-        for s in sellers:
-            s.setup(goods)
+            s.setup({g: goods[g] for g in s.goods})
 
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
 
-    def run(self, n_days: int, strategy: Strategy,
-            verbose: bool = True) -> None:
+    def run(
+        self,
+        n_days:         int,
+        strategy:       Strategy,
+        stock_strategy: StockStrategy,
+        verbose:        bool = True,
+    ) -> None:
         for d in range(n_days):
+            self._purchase_stock(stock_strategy)
+            self._update_prices(strategy)
             self._simulate_day()
-            if d < n_days - 1:
-                self._update_prices(strategy)
             if verbose and (d % max(1, n_days // 10) == 0 or d == n_days - 1):
                 self._print_day()
 
     # ------------------------------------------------------------------
     # Simulation internals
     # ------------------------------------------------------------------
+
+    def _purchase_stock(self, stock_strategy: StockStrategy) -> None:
+        for seller in self.sellers:
+            for good_name, good in self.goods.items():
+                units = stock_strategy(seller, good_name, good.cost)
+                if units > 0:
+                    seller.purchase_stock(good_name, units, good)
 
     def _simulate_day(self) -> None:
         self.day += 1
@@ -53,7 +61,7 @@ class Market:
 
         for _ in range(self.buyers_per_day):
             good_name = random.choice(good_names)
-            available = self._good_sellers[good_name]
+            available = [s for s in self.sellers if s.has_stock(good_name)]
             if not available:
                 continue
 
@@ -63,6 +71,7 @@ class Market:
                                      weights=[1.0] + logits, k=1)[0]
             if outcome >= 0:
                 seller = available[outcome]
+                seller.consume_stock(good_name)
                 price  = seller.prices[good_name]
                 day_sales [seller.name][good_name] += 1
                 day_profit[seller.name][good_name] += price - good.cost
@@ -72,6 +81,7 @@ class Market:
                 s.record(g, s.prices[g],
                          day_sales[s.name][g],
                          day_profit[s.name][g])
+            s.record_end_of_day()
 
     def _update_prices(self, strategy: Strategy) -> None:
         for s in self.sellers:
@@ -94,4 +104,5 @@ class Market:
                       f"price={s.prices[g]:.2f} "
                       f"(cost={good.cost:.2f}, opt≈{good.monopoly_optimal_price():.2f}), "
                       f"sales={s.hist_sales[g][-1]}, "
-                      f"profit={s.hist_profit[g][-1]:.1f}")
+                      f"profit={s.hist_profit[g][-1]:.1f}, "
+                      f"stock={s.stock_level(g)}")
