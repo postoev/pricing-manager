@@ -3,8 +3,9 @@
 ## Commands
 
 ```bash
-pipx run market_sim.py [args]   # run simulation
+pipx run market_sim.py [args]   # run simulation (CLI)
 pipx run run_tests.py           # run all 36 tests
+jupyter notebook market_sim.ipynb  # interactive notebook
 ```
 
 ## Architecture
@@ -20,6 +21,7 @@ market/
 └── visualization.py  # plot_simulation (matplotlib, not imported in tests)
 
 market_sim.py       # thin CLI layer — no business logic here
+market_sim.ipynb    # interactive notebook (ipywidgets, step-by-step simulation)
 run_tests.py        # pipx-runnable test runner
 tests/              # pytest tests, one file per module
 ```
@@ -34,11 +36,13 @@ tests/              # pytest tests, one file per module
 **Strategies** — `Strategy` is a `Protocol` with `__call__(seller, good, cost) -> float`.
 Add a new strategy: dataclass with `__call__`, add to `REGISTRY` in `strategies.py`. No other changes needed.
 
+`cost` must be used as the lower bound for any price proposal — prices below cost yield negative margin on every unit sold regardless of demand, so that region must never be explored. Use `max(cost, ...)` in exploration, not an external clamp.
+
 **Events** — dispatched via `dict[kind, handler]` in `Market._apply_event`. To add a new event type: add a handler method `_handle_<kind>` and register it in the dict.
 
 **Padding** — sellers that enter mid-simulation have shorter histories. `Seller.profit_series(n_days)` and `sales_series(good, n_days)` zero-pad from the left based on `start_day`. Use these methods when aggregating across sellers of different ages — never pad manually in other modules.
 
-**visualization.py** — sets `matplotlib.use('Agg')` at import time. Not imported in `market/__init__.py` deliberately, so tests never touch matplotlib.
+**visualization.py** — sets `matplotlib.use('Agg')` at import time. Not imported in `market/__init__.py` deliberately, so tests never touch matplotlib. `_smooth` uses `mode='valid'` convolution and returns an aligned x-axis to avoid zero-padding artifacts at series edges.
 
 ## Constraints
 
