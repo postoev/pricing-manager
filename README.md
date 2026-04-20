@@ -28,15 +28,6 @@ pipx run market_sim.py
 
 # 2 goods, 3 sellers, gradient strategy
 pipx run market_sim.py -n 2 -s 3 -d 90 --strategy gradient
-
-# Monopoly broken on day 30 by a new entrant
-pipx run market_sim.py -n 1 -s 1 -d 60 --entry "30:S_new:G1"
-
-# Existing seller S1 expands assortment on day 20
-pipx run market_sim.py -n 2 -s 2 -d 60 --entry "20:S1:G2"
-
-# Multiple events
-pipx run market_sim.py -n 2 -s 2 -d 90 --entry "20:S_new:G1" --entry "50:S1:G2"
 ```
 
 ## Interactive Notebook
@@ -49,7 +40,6 @@ jupyter notebook market_sim.ipynb
 
 Features:
 - Configure goods, sellers, buyers, strategy, and seed via form controls
-- Schedule market events (new seller entry, assortment expansion) before or during a run
 - Advance the simulation **+1 day**, **+10 days**, or any arbitrary N
 - Live metrics table: cumulative profit, today's profit and sales, current prices vs. monopoly optimum
 - Live charts: price dynamics, market share, cumulative and daily profit — updated after every step
@@ -64,17 +54,7 @@ Features:
 | `-d`, `--days` | 60 | Days to simulate |
 | `--strategy` | `epsilon_greedy` | `epsilon_greedy` or `gradient` |
 | `--seed` | 42 | Random seed |
-| `--entry` | — | Market event (repeatable, see below) |
 | `--no-plot` | — | Skip chart output |
-
-### `--entry` format
-
-```
-DAY:SELLER_NAME:G1[,G2,...]
-```
-
-- If `SELLER_NAME` matches an existing seller → `add_good` event  
-- Otherwise → `new_seller` event
 
 ## Strategies
 
@@ -90,17 +70,17 @@ Both strategies receive `cost` and use it as the lower bound for exploration. Pr
 pipx run run_tests.py
 ```
 
-36 tests across goods, seller, strategies, and simulation mechanics.
+34 tests across goods, seller, strategies, and simulation mechanics.
 
 ## Project Structure
 
 ```
 market/
 ├── goods.py          # Good dataclass — logit(), monopoly_optimal_price()
-├── seller.py         # Seller dataclass — history, padding helpers
-├── events.py         # Event dataclass
+├── assortment.py     # Assortment — container and aggregator for all market goods
+├── seller.py         # Seller dataclass — budget, history, padding helpers
 ├── strategies.py     # Strategy protocol, EpsilonGreedy, GradientAscent, REGISTRY
-├── simulation.py     # Market — simulate_day, event dispatch, price updates
+├── simulation.py     # Market — simulate_day, price updates
 ├── factory.py        # build_market — random market generation
 └── visualization.py  # plot_simulation — matplotlib charts, edge-safe smoothing
 

@@ -4,7 +4,7 @@
 
 ```bash
 pipx run market_sim.py [args]   # run simulation (CLI)
-pipx run run_tests.py           # run all 36 tests
+pipx run run_tests.py           # run all 34 tests
 jupyter notebook market_sim.ipynb  # interactive notebook
 ```
 
@@ -13,8 +13,8 @@ jupyter notebook market_sim.ipynb  # interactive notebook
 ```
 market/
 ├── goods.py        # Good — demand model (MNL logit)
-├── seller.py       # Seller — price history, padding helpers
-├── events.py       # Event — market structure changes
+├── assortment.py   # Assortment — container for all market goods
+├── seller.py       # Seller — budget, price history, padding helpers
 ├── strategies.py   # Strategy protocol + EpsilonGreedy + GradientAscent
 ├── simulation.py   # Market — core simulation loop
 ├── factory.py      # build_market — random market generation
@@ -33,14 +33,16 @@ tests/              # pytest tests, one file per module
 - outcome `-1` = no purchase; outcome `k` = buy from seller k
 - Adding sellers at same price grows total market (outside option shrinks) — this is intentional and correct
 
+**Assortment** — `Assortment` is the single source of truth for all goods on the market. Supports mapping-like access (`__getitem__`, `__contains__`, `__iter__`), `add(good)`, `names()`, `items()`, `values()`, `cost_range()`, `optimal_prices()`, `summary()`. `Market` holds an `Assortment`; pass it from `build_market` or construct manually.
+
+**Seller budget** — `budget: float` is a required positional argument (third, after `name` and `goods`). It is updated in `record()` as `budget += profit` after each day's sales. Factory initialises all sellers with `10_000.0`.
+
 **Strategies** — `Strategy` is a `Protocol` with `__call__(seller, good, cost) -> float`.
 Add a new strategy: dataclass with `__call__`, add to `REGISTRY` in `strategies.py`. No other changes needed.
 
 `cost` must be used as the lower bound for any price proposal — prices below cost yield negative margin on every unit sold regardless of demand, so that region must never be explored. Use `max(cost, ...)` in exploration, not an external clamp.
 
-**Events** — dispatched via `dict[kind, handler]` in `Market._apply_event`. To add a new event type: add a handler method `_handle_<kind>` and register it in the dict.
-
-**Padding** — sellers that enter mid-simulation have shorter histories. `Seller.profit_series(n_days)` and `sales_series(good, n_days)` zero-pad from the left based on `start_day`. Use these methods when aggregating across sellers of different ages — never pad manually in other modules.
+**Padding** — sellers have shorter histories if created with a non-default `start_day`. `Seller.profit_series(n_days)` and `sales_series(good, n_days)` zero-pad from the left based on `start_day`. Use these methods when aggregating across sellers — never pad manually in other modules.
 
 **visualization.py** — sets `matplotlib.use('Agg')` at import time. Not imported in `market/__init__.py` deliberately, so tests never touch matplotlib. `_smooth` uses `mode='valid'` convolution and returns an aligned x-axis to avoid zero-padding artifacts at series edges.
 
