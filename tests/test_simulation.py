@@ -6,7 +6,7 @@ from market.assortment       import Assortment
 from market.goods            import Good
 from market.seller           import Seller
 from market.simulation       import Market
-from market.strategies       import EpsilonGreedy
+from market.pricing_strategies import EpsilonGreedy
 from market.stock_strategies import FixedStock
 
 

@@ -15,7 +15,7 @@ market/
 ├── goods.py           # Good — demand model (MNL logit)
 ├── assortment.py      # Assortment — container for all market goods
 ├── seller.py          # Seller — budget, stock history, padding helpers
-├── strategies.py      # Strategy protocol + EpsilonGreedy + GradientAscent
+├── pricing_strategies.py  # PricingStrategy protocol + EpsilonGreedy + GradientAscent
 ├── stock_manager.py   # StockManager — per-seller inventory (purchase/consume)
 ├── stock_strategies.py  # StockStrategy protocol + FixedStock + BudgetFraction + STOCK_REGISTRY
 ├── simulation.py      # Market — core simulation loop (purchase → price → simulate)

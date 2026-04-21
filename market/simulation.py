@@ -4,7 +4,7 @@ from typing import List
 
 from .assortment import Assortment
 from .seller import Seller
-from .strategies import PricingStrategy
+from .pricing_strategies import PricingStrategy
 from .stock_strategies import StockStrategy
 
 

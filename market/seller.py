@@ -8,7 +8,7 @@ from .goods import Good
 from .stock_manager import StockManager
 
 if TYPE_CHECKING:
-    from .strategies import PricingStrategy
+    from .pricing_strategies import PricingStrategy
 
 
 @dataclass

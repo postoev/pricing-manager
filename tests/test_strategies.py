@@ -1,7 +1,7 @@
 import pytest
 from market.goods import Good
 from market.seller import Seller
-from market.strategies import EpsilonGreedy, GradientAscent, PRICING_REGISTRY, PricingStrategy
+from market.pricing_strategies import EpsilonGreedy, GradientAscent, PRICING_REGISTRY, PricingStrategy
 
 
 @pytest.fixture
