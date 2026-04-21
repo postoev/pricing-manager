@@ -84,12 +84,9 @@ class Market:
             s.record_end_of_day()
 
     def _update_prices(self, pricing_strategy: PricingStrategy) -> None:
+        costs = {g: self.goods[g].cost for g in self.goods}
         for s in self.sellers:
-            s.prices = {
-                g: max(pricing_strategy(s, g, self.goods[g].cost),
-                       self.goods[g].cost * 1.001)
-                for g in s.goods
-            }
+            s.update_prices(pricing_strategy, costs)
 
     # ------------------------------------------------------------------
     # Reporting

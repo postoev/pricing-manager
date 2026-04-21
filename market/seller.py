@@ -1,11 +1,14 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import TYPE_CHECKING, Dict, List
 
 import numpy as np
 
 from .goods import Good
 from .stock_manager import StockManager
+
+if TYPE_CHECKING:
+    from .strategies import PricingStrategy
 
 
 @dataclass
@@ -32,6 +35,11 @@ class Seller:
         if good_name not in self.goods:
             self.goods.append(good_name)
         self._init_good(good_name, good.cost * 2.0)
+
+    def update_prices(self, strategy: PricingStrategy, costs: Dict[str, float]) -> None:
+        for g in self.goods:
+            cost = costs[g]
+            self.prices[g] = max(strategy(self, g, cost), cost * 1.001)
 
     def purchase_stock(self, good_name: str, units: int, good: Good) -> None:
         """Purchase units of a good, registering it if new. Deducts cost from budget."""
