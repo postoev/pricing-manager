@@ -47,13 +47,13 @@ def test_day_counter_increments(simple_market):
 def test_history_length_matches_days(simple_market):
     for _ in range(5):
         simple_market._simulate_day()
-    assert len(simple_market.sellers[0].hist_sales['G1']) == 5
+    assert len(simple_market.sellers[0].good_metrics['G1'].sales) == 5
 
 
 def test_sales_are_non_negative(simple_market):
     for _ in range(10):
         simple_market._simulate_day()
-    assert all(v >= 0 for v in simple_market.sellers[0].hist_sales['G1'])
+    assert all(v >= 0 for v in simple_market.sellers[0].good_metrics['G1'].sales)
 
 
 def test_run_advances_correct_number_of_days(simple_market):
@@ -76,7 +76,7 @@ def test_very_high_price_yields_few_sales(single_good):
     market._purchase_stock(FixedStock(units=1000))
     sellers[0].prices['G1'] = 500.0
     market._simulate_day()
-    assert sellers[0].hist_sales['G1'][0] < 10
+    assert sellers[0].good_metrics['G1'].sales[0] < 10
 
 
 def test_lower_price_yields_more_sales(single_good):
@@ -88,7 +88,7 @@ def test_lower_price_yields_more_sales(single_good):
         market._purchase_stock(FixedStock(units=2000))
         sellers[0].prices['G1'] = price
         market._simulate_day()
-        return sellers[0].hist_sales['G1'][0]
+        return sellers[0].good_metrics['G1'].sales[0]
 
     assert sales_at_price(15.0) > sales_at_price(50.0)
 
@@ -103,7 +103,7 @@ def test_competition_expands_total_market(single_good):
         for s in sellers:
             s.prices['G1'] = 20.0
         market._simulate_day()
-        return sum(s.hist_sales['G1'][0] for s in sellers)
+        return sum(s.good_metrics['G1'].sales[0] for s in sellers)
 
     assert total_sales(2) > total_sales(1)
 
@@ -116,7 +116,7 @@ def test_no_sales_without_stock(single_good):
     sellers = [Seller(name='S1', goods=['G1'], budget=10_000.0)]
     market  = Market(make_assortment(single_good), sellers, buyers_per_day=1000)
     market._simulate_day()
-    assert sellers[0].hist_sales['G1'][0] == 0
+    assert sellers[0].good_metrics['G1'].sales[0] == 0
 
 
 def test_stock_depletes_on_sale(single_good):

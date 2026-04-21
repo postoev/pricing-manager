@@ -73,7 +73,7 @@ def _plot_prices(
 ) -> None:
     ax.set_facecolor('#FAFAFA')
     for s in carriers:
-        prices = s.hist_price[gname]
+        prices = s.good_metrics[gname].prices
         if not prices:
             continue
         s_days = list(range(s.start_day, s.start_day + len(prices)))

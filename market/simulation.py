@@ -100,6 +100,6 @@ class Market:
                 print(f"  {s.name} | {g}: "
                       f"price={s.prices[g]:.2f} "
                       f"(cost={good.cost:.2f}, opt≈{good.monopoly_optimal_price():.2f}), "
-                      f"sales={s.hist_sales[g][-1]}, "
-                      f"profit={s.hist_profit[g][-1]:.1f}, "
+                      f"sales={s.good_metrics[g].sales[-1]}, "
+                      f"profit={s.good_metrics[g].profit[-1]:.1f}, "
                       f"stock={s.stock_level(g)}")

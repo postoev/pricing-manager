@@ -31,14 +31,14 @@ class EpsilonGreedy:
 
     def __call__(self, seller: Seller, good: str, cost: float) -> float:
         cur  = seller.prices[good]
-        hist = seller.hist_profit[good]
+        hist = seller.good_metrics[good].profit
 
         if random.random() < self.epsilon or len(hist) < 2:
             lo = max(cost, cur * (1 - self.explore_range))
             return random.uniform(lo, cur * (1 + self.explore_range))
 
         dp        = hist[-1] - hist[-2]
-        dv        = seller.hist_price[good][-1] - seller.hist_price[good][-2]
+        dv        = seller.good_metrics[good].prices[-1] - seller.good_metrics[good].prices[-2]
         direction = float(np.sign(dp * dv)) or random.choice([-1.0, 1.0])
         return cur * (1 + self.step * direction)
 
@@ -57,14 +57,14 @@ class GradientAscent:
 
     def __call__(self, seller: Seller, good: str, cost: float) -> float:
         cur  = seller.prices[good]
-        hist = seller.hist_profit[good]
+        hist = seller.good_metrics[good].profit
 
         if random.random() < self.explore_prob or len(hist) < 2:
             lo = max(cost, cur * (1 - self.explore_range))
             return random.uniform(lo, cur * (1 + self.explore_range))
 
         dp = hist[-1] - hist[-2]
-        dv = seller.hist_price[good][-1] - seller.hist_price[good][-2]
+        dv = seller.good_metrics[good].prices[-1] - seller.good_metrics[good].prices[-2]
         if abs(dv) < 1e-9:
             lo = max(cost, cur * (1 - self.explore_range / 2))
             return random.uniform(lo, cur * (1 + self.explore_range / 2))

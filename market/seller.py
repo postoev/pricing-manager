@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Dict, List
 import numpy as np
 
 from .goods import Good
+from .metrics import GoodMetrics, SellerMetrics
 from .stock_manager import StockManager
 
 if TYPE_CHECKING:
@@ -19,11 +20,8 @@ class Seller:
     start_day: int = 1
 
     prices:         Dict[str, float]       = field(default_factory=dict)
-    hist_price:     Dict[str, List[float]] = field(default_factory=dict)
-    hist_sales:     Dict[str, List[int]]   = field(default_factory=dict)
-    hist_profit:    Dict[str, List[float]] = field(default_factory=dict)
-    hist_stock:     Dict[str, List[int]]   = field(default_factory=dict)
-    hist_budget:    List[float]            = field(default_factory=list)
+    good_metrics:   Dict[str, GoodMetrics] = field(default_factory=dict)
+    seller_metrics: SellerMetrics          = field(default_factory=SellerMetrics)
     _stock_manager: StockManager           = field(default_factory=StockManager)
 
     # ------------------------------------------------------------------
@@ -42,7 +40,6 @@ class Seller:
             self.prices[g] = max(strategy(self, g, cost), cost * 1.001)
 
     def purchase_stock(self, good_name: str, units: int, good: Good) -> None:
-        """Purchase units of a good, registering it if new. Deducts cost from budget."""
         if good_name not in self.goods:
             self.goods.append(good_name)
             self._init_good(good_name, good.cost * 2.0)
@@ -60,36 +57,25 @@ class Seller:
 
     def _init_good(self, name: str, initial_price: float) -> None:
         self.prices[name]      = initial_price
-        self.hist_price[name]  = []
-        self.hist_sales[name]  = []
-        self.hist_profit[name] = []
-        self.hist_stock[name]  = []
+        self.good_metrics[name] = GoodMetrics(start_day=self.start_day)
 
     # ------------------------------------------------------------------
     def record(self, good: str, price: float, sales: int, profit: float) -> None:
-        self.hist_price[good].append(price)
-        self.hist_sales[good].append(sales)
-        self.hist_profit[good].append(profit)
-        self.hist_stock[good].append(self._stock_manager.level(good))
+        self.good_metrics[good].record(price, sales, profit, self._stock_manager.level(good))
         self.budget += profit
 
     def record_end_of_day(self) -> None:
-        self.hist_budget.append(self.budget)
+        self.seller_metrics.record(self.budget)
 
     def total_profit(self) -> float:
-        return sum(sum(v) for v in self.hist_profit.values())
+        return sum(sum(m.profit) for m in self.good_metrics.values())
 
     # ------------------------------------------------------------------
     def profit_series(self, n_days: int) -> np.ndarray:
-        """Total daily profit across all goods, zero-padded for pre-entry days."""
         return sum(
-            (self._padded(self.hist_profit[g], n_days) for g in self.goods),
+            (m.profit_series(n_days) for m in self.good_metrics.values()),
             np.zeros(n_days),
         )
 
     def sales_series(self, good: str, n_days: int) -> np.ndarray:
-        return self._padded(self.hist_sales[good], n_days)
-
-    def _padded(self, hist: List, n_days: int) -> np.ndarray:
-        arr = [0] * (self.start_day - 1) + list(hist)
-        return np.array((arr + [0] * n_days)[:n_days], dtype=float)
+        return self.good_metrics[good].sales_series(n_days)

@@ -21,16 +21,16 @@ def test_setup_price_is_twice_cost(seller, good):
 
 
 def test_setup_histories_are_empty(seller):
-    assert seller.hist_sales['G1'] == []
-    assert seller.hist_profit['G1'] == []
-    assert seller.hist_price['G1'] == []
+    assert seller.good_metrics['G1'].sales  == []
+    assert seller.good_metrics['G1'].profit == []
+    assert seller.good_metrics['G1'].prices == []
 
 
 def test_record_appends_to_all_histories(seller):
     seller.record('G1', price=20.0, sales=50, profit=500.0)
-    assert seller.hist_price['G1']  == [20.0]
-    assert seller.hist_sales['G1']  == [50]
-    assert seller.hist_profit['G1'] == [500.0]
+    assert seller.good_metrics['G1'].prices == [20.0]
+    assert seller.good_metrics['G1'].sales  == [50]
+    assert seller.good_metrics['G1'].profit == [500.0]
 
 
 def test_total_profit_sums_across_days(seller):
@@ -53,7 +53,7 @@ def test_add_good_initialises_correctly(good):
     s.add_good('G1', good)
     assert 'G1' in s.goods
     assert s.prices['G1'] == pytest.approx(good.cost * 2.0)
-    assert s.hist_sales['G1'] == []
+    assert s.good_metrics['G1'].sales == []
 
 
 def test_profit_series_pads_leading_zeros():
