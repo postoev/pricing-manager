@@ -4,7 +4,7 @@
 
 ```bash
 pipx run market_sim.py [args]   # run simulation (CLI)
-pipx run run_tests.py           # run all 34 tests
+pipx run run_tests.py           # run all 57 tests
 jupyter notebook market_sim.ipynb  # interactive notebook
 ```
 
@@ -12,13 +12,15 @@ jupyter notebook market_sim.ipynb  # interactive notebook
 
 ```
 market/
-├── goods.py        # Good — demand model (MNL logit)
-├── assortment.py   # Assortment — container for all market goods
-├── seller.py       # Seller — budget, price history, padding helpers
-├── strategies.py   # Strategy protocol + EpsilonGreedy + GradientAscent
-├── simulation.py   # Market — core simulation loop
-├── factory.py      # build_market — random market generation
-└── visualization.py  # plot_simulation (matplotlib, not imported in tests)
+├── goods.py           # Good — demand model (MNL logit)
+├── assortment.py      # Assortment — container for all market goods
+├── seller.py          # Seller — budget, stock history, padding helpers
+├── strategies.py      # Strategy protocol + EpsilonGreedy + GradientAscent
+├── stock_manager.py   # StockManager — per-seller inventory (purchase/consume)
+├── stock_strategies.py  # StockStrategy protocol + FixedStock + BudgetFraction + STOCK_REGISTRY
+├── simulation.py      # Market — core simulation loop (purchase → price → simulate)
+├── factory.py         # build_market — random market generation
+└── visualization.py   # plot_simulation (matplotlib, not imported in tests)
 
 market_sim.py       # thin CLI layer — no business logic here
 market_sim.ipynb    # interactive notebook (ipywidgets, step-by-step simulation)
@@ -41,6 +43,10 @@ tests/              # pytest tests, one file per module
 Add a new strategy: dataclass with `__call__`, add to `REGISTRY` in `strategies.py`. No other changes needed.
 
 `cost` must be used as the lower bound for any price proposal — prices below cost yield negative margin on every unit sold regardless of demand, so that region must never be explored. Use `max(cost, ...)` in exploration, not an external clamp.
+
+**Stock management** — `StockManager` (in `stock_manager.py`) is an internal per-seller inventory component. It tracks unit counts and exposes `purchase(good, units, cost, budget)`, `consume(good)`, `available(good)`, `level(good)`. `Seller` delegates all stock operations to it.
+
+`StockStrategy` is a `Protocol` with `__call__(seller, good, cost) -> int` (units to buy). Built-in implementations: `FixedStock(units=100)` and `BudgetFraction(fraction=0.05)`. Registered in `STOCK_REGISTRY` in `stock_strategies.py`. `Market.run()` requires a `stock_strategy`; the daily loop is: purchase → update prices → simulate.
 
 **Padding** — sellers have shorter histories if created with a non-default `start_day`. `Seller.profit_series(n_days)` and `sales_series(good, n_days)` zero-pad from the left based on `start_day`. Use these methods when aggregating across sellers — never pad manually in other modules.
 

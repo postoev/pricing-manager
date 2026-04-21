@@ -64,25 +64,35 @@ Both strategies receive `cost` and use it as the lower bound for exploration. Pr
 
 **GradientAscent** — finite-difference gradient ascent on observed profit; occasional cost-bounded random exploration to escape local optima.
 
+## Stock Strategies
+
+Each day, before pricing, sellers purchase inventory using a `StockStrategy`. Both built-in strategies respect the seller's budget.
+
+**FixedStock** — buys a fixed number of units per good per day (`units=100` by default).
+
+**BudgetFraction** — spends a fixed fraction of the seller's current budget on each good (`fraction=0.05` by default).
+
 ## Tests
 
 ```bash
 pipx run run_tests.py
 ```
 
-34 tests across goods, seller, strategies, and simulation mechanics.
+57 tests across goods, seller, strategies, stock management, and simulation mechanics.
 
 ## Project Structure
 
 ```
 market/
-├── goods.py          # Good dataclass — logit(), monopoly_optimal_price()
-├── assortment.py     # Assortment — container and aggregator for all market goods
-├── seller.py         # Seller dataclass — budget, history, padding helpers
-├── strategies.py     # Strategy protocol, EpsilonGreedy, GradientAscent, REGISTRY
-├── simulation.py     # Market — simulate_day, price updates
-├── factory.py        # build_market — random market generation
-└── visualization.py  # plot_simulation — matplotlib charts, edge-safe smoothing
+├── goods.py             # Good dataclass — logit(), monopoly_optimal_price()
+├── assortment.py        # Assortment — container and aggregator for all market goods
+├── seller.py            # Seller dataclass — budget, stock history, padding helpers
+├── strategies.py        # Strategy protocol, EpsilonGreedy, GradientAscent, REGISTRY
+├── stock_manager.py     # StockManager — per-seller inventory (purchase/consume/level)
+├── stock_strategies.py  # StockStrategy protocol, FixedStock, BudgetFraction, STOCK_REGISTRY
+├── simulation.py        # Market — purchase → price → simulate loop
+├── factory.py           # build_market — random market generation
+└── visualization.py     # plot_simulation — matplotlib charts, edge-safe smoothing
 
 market_sim.py         # CLI entry point
 market_sim.ipynb      # Interactive Jupyter notebook
