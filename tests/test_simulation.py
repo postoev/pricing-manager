@@ -59,7 +59,7 @@ def test_sales_are_non_negative(simple_market):
 def test_run_advances_correct_number_of_days(simple_market):
     simple_market.run(
         n_days=7,
-        strategy=EpsilonGreedy(),
+        pricing_strategy=EpsilonGreedy(),
         stock_strategy=FixedStock(),
         verbose=False,
     )

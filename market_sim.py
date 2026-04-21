@@ -13,7 +13,7 @@ Examples:
 from __future__ import annotations
 import argparse
 
-from market import build_market, REGISTRY
+from market import build_market, PRICING_REGISTRY
 from market.visualization import plot_simulation
 
 
@@ -24,7 +24,7 @@ def main() -> None:
     parser.add_argument('-c', '--buyers',   type=int, default=1000)
     parser.add_argument('-d', '--days',     type=int, default=60)
     parser.add_argument('--strategy', default='epsilon_greedy',
-                        choices=list(REGISTRY))
+                        choices=list(PRICING_REGISTRY))
     parser.add_argument('--no-plot', action='store_true')
     parser.add_argument('--seed', type=int, default=42)
     args = parser.parse_args()
@@ -35,7 +35,7 @@ def main() -> None:
           f"Strategy={args.strategy}")
 
     market   = build_market(args.goods, args.sellers, args.buyers, args.seed)
-    strategy = REGISTRY[args.strategy]
+    pricing_strategy = PRICING_REGISTRY[args.strategy]
 
     print("\n--- Setup ---")
     for gname, g in market.goods.items():
@@ -44,7 +44,7 @@ def main() -> None:
               f"lam={g.lam:.3f}  opt={g.monopoly_optimal_price():.2f}  "
               f"sellers={carriers}")
 
-    market.run(n_days=args.days, strategy=strategy, verbose=True)
+    market.run(n_days=args.days, pricing_strategy=pricing_strategy, verbose=True)
 
     print("\n=== Final totals ===")
     for s in market.sellers:

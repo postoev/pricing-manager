@@ -1,7 +1,7 @@
 import pytest
 from market.goods import Good
 from market.seller import Seller
-from market.strategies import EpsilonGreedy, GradientAscent, REGISTRY, Strategy
+from market.strategies import EpsilonGreedy, GradientAscent, PRICING_REGISTRY, PricingStrategy
 
 
 @pytest.fixture
@@ -52,9 +52,9 @@ def test_epsilon_greedy_explores_with_no_history():
 
 
 def test_registry_has_expected_keys():
-    assert set(REGISTRY) == {'epsilon_greedy', 'gradient'}
+    assert set(PRICING_REGISTRY) == {'epsilon_greedy', 'gradient'}
 
 
 def test_registry_values_satisfy_strategy_protocol():
-    for strategy in REGISTRY.values():
-        assert isinstance(strategy, Strategy)
+    for strategy in PRICING_REGISTRY.values():
+        assert isinstance(strategy, PricingStrategy)

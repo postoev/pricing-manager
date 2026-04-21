@@ -9,7 +9,7 @@ from .seller import Seller
 
 
 @runtime_checkable
-class Strategy(Protocol):
+class PricingStrategy(Protocol):
     """Callable that proposes a new price for one (seller, good) pair."""
     def __call__(self, seller: Seller, good: str, cost: float) -> float: ...
 
@@ -73,7 +73,7 @@ class GradientAscent:
 
 # ---------------------------------------------------------------------------
 
-REGISTRY: dict[str, Strategy] = {
+PRICING_REGISTRY: dict[str, PricingStrategy] = {
     'epsilon_greedy': EpsilonGreedy(),
     'gradient':       GradientAscent(),
 }

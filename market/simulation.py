@@ -4,7 +4,7 @@ from typing import List
 
 from .assortment import Assortment
 from .seller import Seller
-from .strategies import Strategy
+from .strategies import PricingStrategy
 from .stock_strategies import StockStrategy
 
 
@@ -30,13 +30,13 @@ class Market:
     def run(
         self,
         n_days:         int,
-        strategy:       Strategy,
-        stock_strategy: StockStrategy,
-        verbose:        bool = True,
+        pricing_strategy: PricingStrategy,
+        stock_strategy:   StockStrategy,
+        verbose:          bool = True,
     ) -> None:
         for d in range(n_days):
             self._purchase_stock(stock_strategy)
-            self._update_prices(strategy)
+            self._update_prices(pricing_strategy)
             self._simulate_day()
             if verbose and (d % max(1, n_days // 10) == 0 or d == n_days - 1):
                 self._print_day()
@@ -83,10 +83,10 @@ class Market:
                          day_profit[s.name][g])
             s.record_end_of_day()
 
-    def _update_prices(self, strategy: Strategy) -> None:
+    def _update_prices(self, pricing_strategy: PricingStrategy) -> None:
         for s in self.sellers:
             s.prices = {
-                g: max(strategy(s, g, self.goods[g].cost),
+                g: max(pricing_strategy(s, g, self.goods[g].cost),
                        self.goods[g].cost * 1.001)
                 for g in s.goods
             }

@@ -87,7 +87,7 @@ market/
 ├── goods.py             # Good dataclass — logit(), monopoly_optimal_price()
 ├── assortment.py        # Assortment — container and aggregator for all market goods
 ├── seller.py            # Seller dataclass — budget, stock history, padding helpers
-├── strategies.py        # Strategy protocol, EpsilonGreedy, GradientAscent, REGISTRY
+├── strategies.py        # PricingStrategy protocol, EpsilonGreedy, GradientAscent, PRICING_REGISTRY
 ├── stock_manager.py     # StockManager — per-seller inventory (purchase/consume/level)
 ├── stock_strategies.py  # StockStrategy protocol, FixedStock, BudgetFraction, STOCK_REGISTRY
 ├── simulation.py        # Market — purchase → price → simulate loop
@@ -117,7 +117,7 @@ class MyStrategy:
 2. Register it:
 
 ```python
-REGISTRY['my_strategy'] = MyStrategy()
+PRICING_REGISTRY['my_strategy'] = MyStrategy()
 ```
 
 3. Use it:

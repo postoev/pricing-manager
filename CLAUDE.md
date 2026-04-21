@@ -39,14 +39,14 @@ tests/              # pytest tests, one file per module
 
 **Seller budget** — `budget: float` is a required positional argument (third, after `name` and `goods`). It is updated in `record()` as `budget += profit` after each day's sales. Factory initialises all sellers with `10_000.0`.
 
-**Strategies** — `Strategy` is a `Protocol` with `__call__(seller, good, cost) -> float`.
-Add a new strategy: dataclass with `__call__`, add to `REGISTRY` in `strategies.py`. No other changes needed.
+**Strategies** — `PricingStrategy` is a `Protocol` with `__call__(seller, good, cost) -> float`.
+Add a new strategy: dataclass with `__call__`, add to `PRICING_REGISTRY` in `strategies.py`. No other changes needed.
 
 `cost` must be used as the lower bound for any price proposal — prices below cost yield negative margin on every unit sold regardless of demand, so that region must never be explored. Use `max(cost, ...)` in exploration, not an external clamp.
 
 **Stock management** — `StockManager` (in `stock_manager.py`) is an internal per-seller inventory component. It tracks unit counts and exposes `purchase(good, units, cost, budget)`, `consume(good)`, `available(good)`, `level(good)`. `Seller` delegates all stock operations to it.
 
-`StockStrategy` is a `Protocol` with `__call__(seller, good, cost) -> int` (units to buy). Built-in implementations: `FixedStock(units=100)` and `BudgetFraction(fraction=0.05)`. Registered in `STOCK_REGISTRY` in `stock_strategies.py`. `Market.run()` requires a `stock_strategy`; the daily loop is: purchase → update prices → simulate.
+`StockStrategy` is a `Protocol` with `__call__(seller, good, cost) -> int` (units to buy). Built-in implementations: `FixedStock(units=100)` and `BudgetFraction(fraction=0.05)`. Registered in `STOCK_REGISTRY` in `stock_strategies.py`. `Market.run()` accepts `pricing_strategy` and `stock_strategy`; the daily loop is: purchase → update prices → simulate.
 
 **Padding** — sellers have shorter histories if created with a non-default `start_day`. `Seller.profit_series(n_days)` and `sales_series(good, n_days)` zero-pad from the left based on `start_day`. Use these methods when aggregating across sellers — never pad manually in other modules.
 
