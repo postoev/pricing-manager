@@ -14,7 +14,8 @@ jupyter notebook market_sim.ipynb  # interactive notebook
 market/
 ├── goods.py           # Good — demand model (MNL logit)
 ├── assortment.py      # Assortment — container for all market goods
-├── seller.py          # Seller — budget, stock history, padding helpers
+├── seller.py          # Seller — budget, prices, delegates to metrics + stock
+├── metrics.py         # GoodMetrics, SellerMetrics — time-series history per entity
 ├── pricing_strategies.py  # PricingStrategy protocol + EpsilonGreedy + GradientAscent
 ├── stock_manager.py   # StockManager — per-seller inventory (purchase/consume)
 ├── stock_strategies.py  # StockStrategy protocol + FixedStock + BudgetFraction + STOCK_REGISTRY
@@ -43,6 +44,8 @@ tests/              # pytest tests, one file per module
 Add a new strategy: dataclass with `__call__`, add to `PRICING_REGISTRY` in `strategies.py`. No other changes needed.
 
 `cost` must be used as the lower bound for any price proposal — prices below cost yield negative margin on every unit sold regardless of demand, so that region must never be explored. Use `max(cost, ...)` in exploration, not an external clamp.
+
+**Metrics** — historical data lives in `market/metrics.py`, not in `Seller`. `GoodMetrics` tracks one seller's per-good time series (prices, sales, profit, stock). `SellerMetrics` tracks seller-level budget history. A shared module-level `_padded()` handles zero-padding for late-entry sellers. Access via `seller.good_metrics[good_name]` and `seller.seller_metrics`. The pattern is ready for `MarketGoodMetrics` or any other entity that needs time-series tracking.
 
 **Stock management** — `StockManager` (in `stock_manager.py`) is an internal per-seller inventory component. It tracks unit counts and exposes `purchase(good, units, cost, budget)`, `consume(good)`, `available(good)`, `level(good)`. `Seller` delegates all stock operations to it.
 

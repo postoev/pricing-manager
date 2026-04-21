@@ -78,21 +78,22 @@ Each day, before pricing, sellers purchase inventory using a `StockStrategy`. Bo
 pipx run run_tests.py
 ```
 
-57 tests across goods, seller, strategies, stock management, and simulation mechanics.
+57 tests across goods, seller, metrics, strategies, stock management, and simulation mechanics.
 
 ## Project Structure
 
 ```
 market/
-├── goods.py             # Good dataclass — logit(), monopoly_optimal_price()
-├── assortment.py        # Assortment — container and aggregator for all market goods
-├── seller.py            # Seller dataclass — budget, stock history, padding helpers
-├── strategies.py        # PricingStrategy protocol, EpsilonGreedy, GradientAscent, PRICING_REGISTRY
-├── stock_manager.py     # StockManager — per-seller inventory (purchase/consume/level)
-├── stock_strategies.py  # StockStrategy protocol, FixedStock, BudgetFraction, STOCK_REGISTRY
-├── simulation.py        # Market — purchase → price → simulate loop
-├── factory.py           # build_market — random market generation
-└── visualization.py     # plot_simulation — matplotlib charts, edge-safe smoothing
+├── goods.py              # Good dataclass — logit(), monopoly_optimal_price()
+├── assortment.py         # Assortment — container and aggregator for all market goods
+├── seller.py             # Seller dataclass — budget, prices, delegates to metrics + stock
+├── metrics.py            # GoodMetrics, SellerMetrics — time-series history per entity
+├── pricing_strategies.py # PricingStrategy protocol, EpsilonGreedy, GradientAscent, PRICING_REGISTRY
+├── stock_manager.py      # StockManager — per-seller inventory (purchase/consume/level)
+├── stock_strategies.py   # StockStrategy protocol, FixedStock, BudgetFraction, STOCK_REGISTRY
+├── simulation.py         # Market — purchase → price → simulate loop
+├── factory.py            # build_market — random market generation
+└── visualization.py      # plot_simulation — matplotlib charts, edge-safe smoothing
 
 market_sim.py         # CLI entry point
 market_sim.ipynb      # Interactive Jupyter notebook
@@ -101,7 +102,7 @@ run_tests.py          # Test runner (pipx run run_tests.py)
 
 ## Adding a New Pricing Strategy
 
-1. Add a callable dataclass to `market/strategies.py`:
+1. Add a callable dataclass to `market/pricing_strategies.py`:
 
 ```python
 @dataclass
@@ -110,6 +111,7 @@ class MyStrategy:
 
     def __call__(self, seller: Seller, good: str, cost: float) -> float:
         # cost is the lower bound for any price proposal
+        # read history via seller.good_metrics[good].prices / .profit / .sales
         ...
         return new_price
 ```
