@@ -40,9 +40,10 @@ jupyter notebook market_sim.ipynb
 
 Features:
 - Configure goods, sellers, buyers, strategy, and seed via form controls
-- Advance the simulation **+1 day**, **+10 days**, or any arbitrary N
+- **Step-by-step execution** — run each sub-day phase individually: Purchase → Prices → Simulate
+- Advance the simulation **+1 day**, **+10 days**, or any arbitrary N days at once
 - Live metrics table: cumulative profit, today's profit and sales, current prices vs. monopoly optimum
-- Live charts: price dynamics, market share, cumulative and daily profit — updated after every step
+- Live charts across four tabs: seller budgets, price dynamics, market share + daily profit, stock levels
 
 ## CLI Reference
 
@@ -96,7 +97,7 @@ market/
 └── visualization.py      # plot_simulation — matplotlib charts, edge-safe smoothing
 
 market_sim.py         # CLI entry point
-market_sim.ipynb      # Interactive Jupyter notebook
+market_sim.ipynb      # Step-by-step interactive simulator (ipywidgets)
 run_tests.py          # Test runner (pipx run run_tests.py)
 ```
 

@@ -24,7 +24,7 @@ market/
 └── visualization.py   # plot_simulation (matplotlib, not imported in tests)
 
 market_sim.py       # thin CLI layer — no business logic here
-market_sim.ipynb    # interactive notebook (ipywidgets, step-by-step simulation)
+market_sim.ipynb    # interactive notebook — step-by-step simulator (see below)
 run_tests.py        # pipx-runnable test runner
 tests/              # pytest tests, one file per module
 ```
