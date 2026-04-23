@@ -4,7 +4,7 @@
 
 ```bash
 pipx run market_sim.py [args]   # run simulation (CLI)
-pipx run run_tests.py           # run all 57 tests
+pipx run run_tests.py           # run all 69 tests
 jupyter notebook market_sim.ipynb  # interactive notebook
 ```
 
@@ -44,7 +44,7 @@ tests/              # pytest tests, one file per module
 
 **Assortment** — `Assortment` is the single source of truth for all goods on the market. Keyed by `good.id`. Supports mapping-like access (`__getitem__`, `__contains__`, `__iter__`), `add(good)`, `ids()`, `items()`, `values()`, `cost_range()`, `optimal_prices()`, `summary()`. `Market` holds an `Assortment`; pass it from `build_market` or construct manually.
 
-**Catalog** — `market/catalog.py` provides CSV persistence at `data/assortment.csv`. Functions: `is_initialized(path)`, `load(path) -> list[Good]`, `save(goods, path)`, `generate(n, rng) -> list[Good]`. The built-in template has 20 realistic consumer goods (Bread, Milk, Eggs …). `factory.py` loads from the catalog if it exists, otherwise calls `generate()` and saves. The catalog is the single source of truth for good IDs across runs.
+**Catalog** — `market/catalog.py` provides CSV persistence at `data/assortment.csv`. Functions: `is_initialized(path)`, `load(path) -> list[Good]`, `save(goods, path)`, `generate(n, rng) -> list[Good]`. Supports up to `MAX_GOODS = 1000` unique goods via parametric generation: 50 base products × 5 sizes × 4 quality tiers. Products vary fastest so the first n goods span all product types before repeating size/quality variants. `factory.py` loads from the catalog if it exists, otherwise calls `generate()` and saves. The catalog is the single source of truth for good IDs across runs.
 
 **Seller budget** — `budget: float` is a required positional argument (third, after `name` and `goods`). It is updated in `record()` as `budget += profit` after each day's sales. Factory initialises all sellers with `10_000.0`.
 

@@ -30,7 +30,7 @@ pipx run market_sim.py
 pipx run market_sim.py -n 2 -s 3 -d 90 --strategy gradient
 ```
 
-On first run, `build_market` creates `data/assortment.csv` with realistic product names (Bread, Milk, Eggs, Coffee, …). Subsequent runs load goods from the same file so IDs remain stable.
+On first run, `build_market` creates `data/assortment.csv` by generating goods from a parametric catalog: 50 base products × 5 sizes × 4 quality tiers = up to 1000 unique goods. Subsequent runs load goods from the same file so IDs remain stable.
 
 ## Interactive Notebook
 
@@ -51,7 +51,7 @@ Features:
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `-n`, `--goods` | 1 | Number of goods (max 20) |
+| `-n`, `--goods` | 1 | Number of goods (max 1000) |
 | `-s`, `--sellers` | 1 | Number of sellers |
 | `-c`, `--buyers` | 1000 | Buyers per day |
 | `-d`, `--days` | 60 | Days to simulate |
@@ -81,7 +81,7 @@ Each day, before pricing, sellers purchase inventory using a `StockStrategy`. Bo
 pipx run run_tests.py
 ```
 
-57 tests across goods, seller, metrics, strategies, stock management, and simulation mechanics.
+69 tests across goods, seller, catalog, metrics, strategies, stock management, and simulation mechanics.
 
 ## Project Structure
 
