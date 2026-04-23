@@ -10,29 +10,88 @@ DEFAULT_PATH = Path(__file__).parent.parent / "data" / "assortment.csv"
 
 _FIELDS = ["id", "name", "description", "cost", "value", "lam"]
 
-# 20 realistic consumer goods with base costs
-_PRODUCT_TEMPLATE: list[dict] = [
-    {"name": "Bread",              "description": "Whole wheat bread loaf, 500g",                    "cost": 12.0},
-    {"name": "Milk",               "description": "Pasteurized whole milk, 1L",                      "cost": 18.0},
-    {"name": "Eggs",               "description": "Farm fresh chicken eggs, pack of 10",             "cost": 22.0},
-    {"name": "Butter",             "description": "Unsalted butter block, 200g",                     "cost": 28.0},
-    {"name": "Coffee",             "description": "Ground arabica coffee beans, 250g",               "cost": 35.0},
-    {"name": "Shampoo",            "description": "Moisturizing shampoo for dry hair, 400ml",        "cost": 42.0},
-    {"name": "Toothpaste",         "description": "Whitening fluoride toothpaste, 150ml",            "cost": 30.0},
-    {"name": "Rice",               "description": "Long grain parboiled white rice, 1kg",            "cost": 25.0},
-    {"name": "Pasta",              "description": "Durum wheat fusilli pasta, 500g",                 "cost": 20.0},
-    {"name": "Olive Oil",          "description": "Cold-pressed extra virgin olive oil, 500ml",      "cost": 55.0},
-    {"name": "Orange Juice",       "description": "100% natural squeezed orange juice, 1L",          "cost": 38.0},
-    {"name": "Yogurt",             "description": "Natural Greek-style yogurt, 400g",                "cost": 32.0},
-    {"name": "Cheese",             "description": "Aged Gouda cheese, 200g",                         "cost": 60.0},
-    {"name": "Soap",               "description": "Antibacterial moisturizing bar soap, 100g",       "cost": 15.0},
-    {"name": "Chips",              "description": "Lightly salted potato crisps, 150g",              "cost": 24.0},
-    {"name": "Chocolate",          "description": "Dark chocolate 70% cacao, 100g",                  "cost": 48.0},
-    {"name": "Honey",              "description": "Wildflower natural honey, 500g",                  "cost": 65.0},
-    {"name": "Sugar",              "description": "Fine white granulated sugar, 1kg",                "cost": 16.0},
-    {"name": "Green Tea",          "description": "Premium loose leaf green tea, 100g",              "cost": 45.0},
-    {"name": "Laundry Detergent",  "description": "Concentrated bio liquid detergent, 1L",           "cost": 78.0},
+# 50 base products across categories
+_BASE_PRODUCTS: list[dict] = [
+    {"name": "Bread",             "base_cost": 12.0},
+    {"name": "Milk",              "base_cost": 18.0},
+    {"name": "Eggs",              "base_cost": 22.0},
+    {"name": "Butter",            "base_cost": 28.0},
+    {"name": "Coffee",            "base_cost": 35.0},
+    {"name": "Shampoo",           "base_cost": 42.0},
+    {"name": "Toothpaste",        "base_cost": 30.0},
+    {"name": "Rice",              "base_cost": 25.0},
+    {"name": "Pasta",             "base_cost": 20.0},
+    {"name": "Olive Oil",         "base_cost": 55.0},
+    {"name": "Orange Juice",      "base_cost": 38.0},
+    {"name": "Yogurt",            "base_cost": 32.0},
+    {"name": "Cheese",            "base_cost": 60.0},
+    {"name": "Soap",              "base_cost": 15.0},
+    {"name": "Chips",             "base_cost": 24.0},
+    {"name": "Chocolate",         "base_cost": 48.0},
+    {"name": "Honey",             "base_cost": 65.0},
+    {"name": "Sugar",             "base_cost": 16.0},
+    {"name": "Green Tea",         "base_cost": 45.0},
+    {"name": "Laundry Detergent", "base_cost": 78.0},
+    {"name": "Flour",             "base_cost": 14.0},
+    {"name": "Salt",              "base_cost":  8.0},
+    {"name": "Vinegar",           "base_cost": 10.0},
+    {"name": "Canned Tomatoes",   "base_cost": 20.0},
+    {"name": "Canned Beans",      "base_cost": 18.0},
+    {"name": "Black Tea",         "base_cost": 30.0},
+    {"name": "Mineral Water",     "base_cost": 12.0},
+    {"name": "Apple Juice",       "base_cost": 32.0},
+    {"name": "Energy Drink",      "base_cost": 55.0},
+    {"name": "Cream",             "base_cost": 35.0},
+    {"name": "Sour Cream",        "base_cost": 28.0},
+    {"name": "Kefir",             "base_cost": 22.0},
+    {"name": "Cottage Cheese",    "base_cost": 38.0},
+    {"name": "Cookies",           "base_cost": 30.0},
+    {"name": "Crackers",          "base_cost": 22.0},
+    {"name": "Almonds",           "base_cost": 70.0},
+    {"name": "Body Lotion",       "base_cost": 50.0},
+    {"name": "Deodorant",         "base_cost": 45.0},
+    {"name": "Conditioner",       "base_cost": 40.0},
+    {"name": "Face Cream",        "base_cost": 80.0},
+    {"name": "Hand Cream",        "base_cost": 35.0},
+    {"name": "Shower Gel",        "base_cost": 38.0},
+    {"name": "Dish Soap",         "base_cost": 25.0},
+    {"name": "Sponge",            "base_cost": 12.0},
+    {"name": "Trash Bags",        "base_cost": 30.0},
+    {"name": "Toilet Paper",      "base_cost": 20.0},
+    {"name": "Paper Towels",      "base_cost": 25.0},
+    {"name": "Aluminum Foil",     "base_cost": 18.0},
+    {"name": "Sunscreen",         "base_cost": 75.0},
+    {"name": "Vitamin C",         "base_cost": 45.0},
 ]
+
+_SIZES: list[dict] = [
+    {"label": "Mini",       "cost_mult": 0.50},
+    {"label": "Standard",   "cost_mult": 1.00},
+    {"label": "Large",      "cost_mult": 1.80},
+    {"label": "Value Pack", "cost_mult": 3.20},
+    {"label": "Bulk",       "cost_mult": 5.50},
+]
+
+_QUALITIES: list[dict] = [
+    {"label": "Budget",  "cost_mult": 0.70},
+    {"label": "Classic", "cost_mult": 1.00},
+    {"label": "Premium", "cost_mult": 1.60},
+    {"label": "Organic", "cost_mult": 2.20},
+]
+
+# Products vary fastest → first n goods span all 50 product types before repeating sizes/qualities
+_ALL_COMBOS: list[dict] = [
+    {
+        "name": f"{p['name']} {s['label']} {q['label']}",
+        "description": f"{q['label']} {p['name'].lower()}, {s['label'].lower()} size",
+        "cost": round(p["base_cost"] * s["cost_mult"] * q["cost_mult"], 2),
+    }
+    for s in _SIZES
+    for q in _QUALITIES
+    for p in _BASE_PRODUCTS
+]
+
+MAX_GOODS = len(_ALL_COMBOS)  # 1000
 
 
 def is_initialized(path: Path = DEFAULT_PATH) -> bool:
@@ -67,17 +126,16 @@ def save(goods: List[Good], path: Path = DEFAULT_PATH) -> None:
 
 
 def generate(n: int, rng) -> List[Good]:
-    """Generate n goods from the built-in template using rng for value/lam."""
-    if n > len(_PRODUCT_TEMPLATE):
-        raise ValueError(f"catalog supports at most {len(_PRODUCT_TEMPLATE)} goods, requested {n}")
+    if n > MAX_GOODS:
+        raise ValueError(f"catalog supports at most {MAX_GOODS} goods, requested {n}")
     return [
         Good(
             id=str(uuid.uuid4()),
-            name=t["name"],
-            description=t["description"],
-            cost=t["cost"],
-            value=round(t["cost"] * float(rng.uniform(2.5, 4.0)), 2),
+            name=combo["name"],
+            description=combo["description"],
+            cost=combo["cost"],
+            value=round(combo["cost"] * float(rng.uniform(2.5, 4.0)), 2),
             lam=round(float(rng.uniform(0.10, 0.20)), 4),
         )
-        for t in _PRODUCT_TEMPLATE[:n]
+        for combo in _ALL_COMBOS[:n]
     ]
