@@ -6,7 +6,7 @@ from market.seller import Seller
 
 @pytest.fixture
 def good():
-    return Good(name='G1', cost=10.0, value=30.0, lam=0.15)
+    return Good(id='G1', name='Bread', cost=10.0, value=30.0, lam=0.15)
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ def test_total_profit_sums_across_days(seller):
 
 
 def test_total_profit_sums_across_goods(good):
-    g2 = Good('G2', 15.0, 40.0, 0.12)
+    g2 = Good(id='G2', name='Milk', cost=15.0, value=40.0, lam=0.12)
     s  = Seller(name='S1', goods=['G1', 'G2'], budget=10_000.0)
     s.setup({'G1': good, 'G2': g2})
     s.record('G1', 20.0, 5, 50.0)
@@ -57,7 +57,7 @@ def test_add_good_initialises_correctly(good):
 
 
 def test_profit_series_pads_leading_zeros():
-    g = Good('G1', 10.0, 30.0, 0.15)
+    g = Good(id='G1', name='Bread', cost=10.0, value=30.0, lam=0.15)
     s = Seller(name='S1', goods=['G1'], budget=10_000.0, start_day=3)
     s.setup({'G1': g})
     s.record('G1', 20.0, 5, 50.0)
@@ -66,7 +66,7 @@ def test_profit_series_pads_leading_zeros():
 
 
 def test_sales_series_pads_leading_zeros():
-    g = Good('G1', 10.0, 30.0, 0.15)
+    g = Good(id='G1', name='Bread', cost=10.0, value=30.0, lam=0.15)
     s = Seller(name='S1', goods=['G1'], budget=10_000.0, start_day=2)
     s.setup({'G1': g})
     s.record('G1', 20.0, 10, 100.0)

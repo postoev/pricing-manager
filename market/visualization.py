@@ -17,10 +17,10 @@ if TYPE_CHECKING:
 
 def plot_simulation(market: 'Market',
                     save_path: str = 'market_simulation.png') -> None:
-    n_days     = market.day
-    days       = list(range(1, n_days + 1))
-    good_names = market.goods.names()
-    n_goods    = len(good_names)
+    n_days   = market.day
+    days     = list(range(1, n_days + 1))
+    good_ids = market.goods.ids()
+    n_goods  = len(good_ids)
 
     seller_color = _seller_palette(market)
     fig = plt.figure(figsize=(14, 4 * n_goods + 4))
@@ -33,15 +33,16 @@ def plot_simulation(market: 'Market',
     bot_grid = gridspec.GridSpecFromSubplotSpec(
         1, 2, subplot_spec=outer[1], wspace=0.35)
 
-    for row, gname in enumerate(good_names):
-        carriers = [s for s in market.sellers if gname in s.goods]
+    for row, good_id in enumerate(good_ids):
+        good     = market.goods[good_id]
+        carriers = [s for s in market.sellers if good_id in s.goods]
         _plot_prices(
             fig.add_subplot(top_grid[row, 0]),
-            market.goods[gname], gname, carriers, n_days, seller_color,
+            good, carriers, n_days, seller_color,
         )
         _plot_shares(
             fig.add_subplot(top_grid[row, 1]),
-            gname, carriers, days, n_days, seller_color,
+            good, carriers, days, n_days, seller_color,
         )
 
     _plot_cumulative_profit(
@@ -66,14 +67,13 @@ def plot_simulation(market: 'Market',
 def _plot_prices(
     ax,
     good:         'Good',
-    gname:        str,
     carriers:     List['Seller'],
     n_days:       int,
     seller_color: Dict[str, tuple],
 ) -> None:
     ax.set_facecolor('#FAFAFA')
     for s in carriers:
-        prices = s.good_metrics[gname].prices
+        prices = s.good_metrics[good.id].prices
         if not prices:
             continue
         s_days = list(range(s.start_day, s.start_day + len(prices)))
@@ -87,12 +87,12 @@ def _plot_prices(
     ax.axhline(good.monopoly_optimal_price(), color='#27AE60', linestyle=':',
                linewidth=1.5, label=f'opt≈{good.monopoly_optimal_price():.0f}')
 
-    _style_ax(ax, f'{gname}  —  цены продавцов', 'Цена')
+    _style_ax(ax, f'{good.name}  —  цены продавцов', 'Цена')
 
 
 def _plot_shares(
     ax,
-    gname:        str,
+    good:         'Good',
     carriers:     List['Seller'],
     days:         List[int],
     n_days:       int,
@@ -100,7 +100,7 @@ def _plot_shares(
 ) -> None:
     ax.set_facecolor('#FAFAFA')
 
-    sales_matrix = np.array([s.sales_series(gname, n_days) for s in carriers])
+    sales_matrix = np.array([s.sales_series(good.id, n_days) for s in carriers])
     totals       = sales_matrix.sum(axis=0)
     shares       = sales_matrix / np.where(totals == 0, 1, totals) * 100
 
@@ -111,7 +111,7 @@ def _plot_shares(
         bottom += shares[idx]
 
     ax.set_ylim(0, 100)
-    _style_ax(ax, f'{gname}  —  доля рынка', 'Доля рынка, %')
+    _style_ax(ax, f'{good.name}  —  доля рынка', 'Доля рынка, %')
 
 
 def _plot_cumulative_profit(

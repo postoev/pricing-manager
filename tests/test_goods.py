@@ -4,7 +4,7 @@ from market.goods import Good
 
 @pytest.fixture
 def good():
-    return Good(name='G1', cost=10.0, value=30.0, lam=0.15)
+    return Good(id='G1', name='Bread', cost=10.0, value=30.0, lam=0.15)
 
 
 def test_logit_at_value_is_one(good):
@@ -33,6 +33,6 @@ def test_monopoly_opt_below_twice_value(good):
 
 
 def test_monopoly_opt_increases_with_cost():
-    g1 = Good('G', cost=10.0, value=30.0, lam=0.15)
-    g2 = Good('G', cost=20.0, value=60.0, lam=0.15)  # scaled up proportionally
+    g1 = Good(id='G1', name='Bread', cost=10.0, value=30.0, lam=0.15)
+    g2 = Good(id='G2', name='Milk',  cost=20.0, value=60.0, lam=0.15)
     assert g2.monopoly_optimal_price() > g1.monopoly_optimal_price()

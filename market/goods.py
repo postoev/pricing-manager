@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import numpy as np
 
 
@@ -14,10 +14,12 @@ class Good:
 
     Both parameters are unknown to sellers.
     """
-    name:  str
-    cost:  float
-    value: float   # V
-    lam:   float   # λ
+    id:          str
+    name:        str
+    cost:        float
+    value:       float   # V
+    lam:         float   # λ
+    description: str = ""
 
     def logit(self, price: float) -> float:
         """MNL weight exp(λ(V−p)) for one seller option."""

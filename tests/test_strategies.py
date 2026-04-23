@@ -6,7 +6,7 @@ from market.pricing_strategies import EpsilonGreedy, GradientAscent, PRICING_REG
 
 @pytest.fixture
 def seller_with_history():
-    g = Good('G1', 10.0, 30.0, 0.15)
+    g = Good(id='G1', name='Bread', cost=10.0, value=30.0, lam=0.15)
     s = Seller(name='S1', goods=['G1'], budget=10_000.0)
     s.setup({'G1': g})
     s.record('G1', price=18.0, sales=50, profit=400.0)
@@ -43,7 +43,7 @@ def test_price_positive_on_full_explore(strategy, seller_with_history):
 
 
 def test_epsilon_greedy_explores_with_no_history():
-    g = Good('G1', 10.0, 30.0, 0.15)
+    g = Good(id='G1', name='Bread', cost=10.0, value=30.0, lam=0.15)
     s = Seller(name='S1', goods=['G1'], budget=10_000.0)
     s.setup({'G1': g})
     # no records yet → falls back to explore regardless of epsilon

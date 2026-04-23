@@ -30,6 +30,8 @@ pipx run market_sim.py
 pipx run market_sim.py -n 2 -s 3 -d 90 --strategy gradient
 ```
 
+On first run, `build_market` creates `data/assortment.csv` with realistic product names (Bread, Milk, Eggs, Coffee, …). Subsequent runs load goods from the same file so IDs remain stable.
+
 ## Interactive Notebook
 
 `market_sim.ipynb` provides a step-by-step interactive interface powered by `ipywidgets`:
@@ -49,7 +51,7 @@ Features:
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `-n`, `--goods` | 1 | Number of goods |
+| `-n`, `--goods` | 1 | Number of goods (max 20) |
 | `-s`, `--sellers` | 1 | Number of sellers |
 | `-c`, `--buyers` | 1000 | Buyers per day |
 | `-d`, `--days` | 60 | Days to simulate |
@@ -85,21 +87,29 @@ pipx run run_tests.py
 
 ```
 market/
-├── goods.py              # Good dataclass — logit(), monopoly_optimal_price()
-├── assortment.py         # Assortment — container and aggregator for all market goods
+├── goods.py              # Good dataclass — id, name, description, logit(), monopoly_optimal_price()
+├── assortment.py         # Assortment — ID-keyed container for all market goods
+├── catalog.py            # CSV catalog — is_initialized/load/save/generate (data/assortment.csv)
 ├── seller.py             # Seller dataclass — budget, prices, delegates to metrics + stock
 ├── metrics.py            # GoodMetrics, SellerMetrics — time-series history per entity
 ├── pricing_strategies.py # PricingStrategy protocol, EpsilonGreedy, GradientAscent, PRICING_REGISTRY
 ├── stock_manager.py      # StockManager — per-seller inventory (purchase/consume/level)
 ├── stock_strategies.py   # StockStrategy protocol, FixedStock, BudgetFraction, STOCK_REGISTRY
 ├── simulation.py         # Market — purchase → price → simulate loop
-├── factory.py            # build_market — random market generation
+├── factory.py            # build_market — loads catalog or generates goods on first run
 └── visualization.py      # plot_simulation — matplotlib charts, edge-safe smoothing
+
+data/
+└── assortment.csv        # persistent good catalog (auto-created on first run)
 
 market_sim.py         # CLI entry point
 market_sim.ipynb      # Step-by-step interactive simulator (ipywidgets)
 run_tests.py          # Test runner (pipx run run_tests.py)
 ```
+
+## Good Identity
+
+`Good.id` (UUID) is the primary key everywhere: `Assortment`, `Seller.goods`, `Seller.prices`, `Seller.good_metrics`, and the CSV catalog. `Good.name` is the human-readable label used only for display. This means the same good keeps a stable ID across simulation runs as long as `data/assortment.csv` exists.
 
 ## Adding a New Pricing Strategy
 
@@ -110,9 +120,9 @@ run_tests.py          # Test runner (pipx run run_tests.py)
 class MyStrategy:
     my_param: float = 0.5
 
-    def __call__(self, seller: Seller, good: str, cost: float) -> float:
+    def __call__(self, seller: Seller, good_id: str, cost: float) -> float:
         # cost is the lower bound for any price proposal
-        # read history via seller.good_metrics[good].prices / .profit / .sales
+        # read history via seller.good_metrics[good_id].prices / .profit / .sales
         ...
         return new_price
 ```

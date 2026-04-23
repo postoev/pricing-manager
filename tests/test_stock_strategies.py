@@ -8,7 +8,7 @@ from market.stock_strategies import (
 
 @pytest.fixture
 def seller():
-    g = Good('G1', cost=10.0, value=30.0, lam=0.15)
+    g = Good(id='G1', name='Bread', cost=10.0, value=30.0, lam=0.15)
     s = Seller(name='S1', goods=['G1'], budget=1_000.0)
     s.setup({'G1': g})
     return s

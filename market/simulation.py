@@ -21,7 +21,7 @@ class Market:
         self.day            = 0
 
         for s in sellers:
-            s.setup({g: goods[g] for g in s.goods})
+            s.setup({gid: goods[gid] for gid in s.goods})
 
     # ------------------------------------------------------------------
     # Public API
@@ -29,7 +29,7 @@ class Market:
 
     def run(
         self,
-        n_days:         int,
+        n_days:           int,
         pricing_strategy: PricingStrategy,
         stock_strategy:   StockStrategy,
         verbose:          bool = True,
@@ -47,44 +47,44 @@ class Market:
 
     def _purchase_stock(self, stock_strategy: StockStrategy) -> None:
         for seller in self.sellers:
-            for good_name, good in self.goods.items():
-                units = stock_strategy(seller, good_name, good.cost)
+            for good_id, good in self.goods.items():
+                units = stock_strategy(seller, good_id, good.cost)
                 if units > 0:
-                    seller.purchase_stock(good_name, units, good)
+                    seller.purchase_stock(good_id, units, good)
 
     def _simulate_day(self) -> None:
         self.day += 1
 
-        good_names = self.goods.names()
-        day_sales  = {s.name: {g: 0   for g in s.goods} for s in self.sellers}
-        day_profit = {s.name: {g: 0.0 for g in s.goods} for s in self.sellers}
+        good_ids   = self.goods.ids()
+        day_sales  = {s.name: {gid: 0   for gid in s.goods} for s in self.sellers}
+        day_profit = {s.name: {gid: 0.0 for gid in s.goods} for s in self.sellers}
 
         for _ in range(self.buyers_per_day):
-            good_name = random.choice(good_names)
-            available = [s for s in self.sellers if s.has_stock(good_name)]
+            good_id   = random.choice(good_ids)
+            available = [s for s in self.sellers if s.has_stock(good_id)]
             if not available:
                 continue
 
-            good    = self.goods[good_name]
-            logits  = [good.logit(s.prices[good_name]) for s in available]
+            good    = self.goods[good_id]
+            logits  = [good.logit(s.prices[good_id]) for s in available]
             outcome = random.choices(range(-1, len(available)),
                                      weights=[1.0] + logits, k=1)[0]
             if outcome >= 0:
                 seller = available[outcome]
-                seller.consume_stock(good_name)
-                price  = seller.prices[good_name]
-                day_sales [seller.name][good_name] += 1
-                day_profit[seller.name][good_name] += price - good.cost
+                seller.consume_stock(good_id)
+                price  = seller.prices[good_id]
+                day_sales [seller.name][good_id] += 1
+                day_profit[seller.name][good_id] += price - good.cost
 
         for s in self.sellers:
-            for g in s.goods:
-                s.record(g, s.prices[g],
-                         day_sales[s.name][g],
-                         day_profit[s.name][g])
+            for good_id in s.goods:
+                s.record(good_id, s.prices[good_id],
+                         day_sales[s.name][good_id],
+                         day_profit[s.name][good_id])
             s.record_end_of_day()
 
     def _update_prices(self, pricing_strategy: PricingStrategy) -> None:
-        costs = {g: self.goods[g].cost for g in self.goods}
+        costs = {gid: self.goods[gid].cost for gid in self.goods}
         for s in self.sellers:
             s.update_prices(pricing_strategy, costs)
 
@@ -95,11 +95,11 @@ class Market:
     def _print_day(self) -> None:
         print(f"\n--- Day {self.day} ---")
         for s in self.sellers:
-            for g in s.goods:
-                good = self.goods[g]
-                print(f"  {s.name} | {g}: "
-                      f"price={s.prices[g]:.2f} "
+            for good_id in s.goods:
+                good = self.goods[good_id]
+                print(f"  {s.name} | {good.name}: "
+                      f"price={s.prices[good_id]:.2f} "
                       f"(cost={good.cost:.2f}, opt≈{good.monopoly_optimal_price():.2f}), "
-                      f"sales={s.good_metrics[g].sales[-1]}, "
-                      f"profit={s.good_metrics[g].profit[-1]:.1f}, "
-                      f"stock={s.stock_level(g)}")
+                      f"sales={s.good_metrics[good_id].sales[-1]}, "
+                      f"profit={s.good_metrics[good_id].profit[-1]:.1f}, "
+                      f"stock={s.stock_level(good_id)}")

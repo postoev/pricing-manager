@@ -8,24 +8,24 @@ class Assortment:
     """All goods available on the market — add, look up, and inspect."""
 
     def __init__(self) -> None:
-        self._goods: Dict[str, Good] = {}
+        self._goods: Dict[str, Good] = {}   # keyed by good.id
 
     # ------------------------------------------------------------------
     # Mutation
     # ------------------------------------------------------------------
 
     def add(self, good: Good) -> None:
-        self._goods[good.name] = good
+        self._goods[good.id] = good
 
     # ------------------------------------------------------------------
-    # Mapping-like access (read-only)
+    # Mapping-like access by good ID (read-only)
     # ------------------------------------------------------------------
 
-    def __getitem__(self, name: str) -> Good:
-        return self._goods[name]
+    def __getitem__(self, good_id: str) -> Good:
+        return self._goods[good_id]
 
-    def __contains__(self, name: object) -> bool:
-        return name in self._goods
+    def __contains__(self, good_id: object) -> bool:
+        return good_id in self._goods
 
     def __iter__(self) -> Iterator[str]:
         return iter(self._goods)
@@ -34,10 +34,10 @@ class Assortment:
         return len(self._goods)
 
     def __repr__(self) -> str:
-        names = list(self._goods)
+        names = [g.name for g in self._goods.values()]
         return f"Assortment({names})"
 
-    def names(self) -> list[str]:
+    def ids(self) -> list[str]:
         return list(self._goods)
 
     def items(self):
@@ -55,11 +55,11 @@ class Assortment:
         return (min(costs), max(costs))
 
     def optimal_prices(self) -> dict[str, float]:
-        return {name: g.monopoly_optimal_price() for name, g in self._goods.items()}
+        return {good_id: g.monopoly_optimal_price() for good_id, g in self._goods.items()}
 
     def summary(self) -> None:
         print(f"Assortment: {len(self)} goods")
-        for name, g in self._goods.items():
-            print(f"  {name}: cost={g.cost:.2f}, "
+        for g in self._goods.values():
+            print(f"  [{g.id}] {g.name}: cost={g.cost:.2f}, "
                   f"value={g.value:.2f}, "
                   f"opt≈{g.monopoly_optimal_price():.2f}")

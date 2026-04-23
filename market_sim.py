@@ -34,13 +34,13 @@ def main() -> None:
           f"Buyers/day={args.buyers}  Days={args.days}  "
           f"Strategy={args.strategy}")
 
-    market   = build_market(args.goods, args.sellers, args.buyers, args.seed)
+    market           = build_market(args.goods, args.sellers, args.buyers, args.seed)
     pricing_strategy = PRICING_REGISTRY[args.strategy]
 
     print("\n--- Setup ---")
-    for gname, g in market.goods.items():
-        carriers = [s.name for s in market.sellers if gname in s.goods]
-        print(f"  {gname}: cost={g.cost:.2f}  value={g.value:.2f}  "
+    for good_id, g in market.goods.items():
+        carriers = [s.name for s in market.sellers if good_id in s.goods]
+        print(f"  {g.name}: cost={g.cost:.2f}  value={g.value:.2f}  "
               f"lam={g.lam:.3f}  opt={g.monopoly_optimal_price():.2f}  "
               f"sellers={carriers}")
 

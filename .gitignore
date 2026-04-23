@@ -9,6 +9,9 @@ __pycache__/
 # Generated output
 *.png
 
+# Assortment catalog (auto-created on first run)
+data/
+
 # Virtual environments
 .venv/
 venv/

@@ -23,7 +23,7 @@ def make_assortment(*goods: Good) -> Assortment:
 
 @pytest.fixture
 def single_good():
-    return Good('G1', cost=10.0, value=30.0, lam=0.15)
+    return Good(id='G1', name='Bread', cost=10.0, value=30.0, lam=0.15)
 
 
 @pytest.fixture
